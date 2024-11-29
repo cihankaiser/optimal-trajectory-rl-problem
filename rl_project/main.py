@@ -1,32 +1,26 @@
-import gym
-from stable_baselines3 import PPO
-import os
+import gymnasium as gym
 import numpy as np
-import time
-from airenv import AirEnv
-
-models_dir = f"models/{int(time.time())}/"
-logdir = f"logs/{int(time.time())}/"
-
-if not os.path.exists(models_dir):
-	os.makedirs(models_dir)
-
-if not os.path.exists(logdir):
-	os.makedirs(logdir)
-	
-
-
-
-goal_x = 40*111000
-goal_y = 32*111000*np.cos(np.deg2rad(40))
-goal_h = 8000
-env = AirEnv(goal_x,goal_y,goal_h)
+import matplotlib.pyplot as plt
+import os
+from stable_baselines3.common.env_checker import check_env
+from stable_baselines3 import PPO
+from environment_norm import AircraftEnv
+from stable_baselines3.common.env_util import make_vec_env
+env = AircraftEnv()
 
 env.reset()
+log_dir = "C:/Users/cihan/OneDrive/Dokumente"
+os.makedirs(log_dir, exist_ok=True)
 
-model = PPO("MlpPolicy", env, verbose=1,tensorboard_log=logdir)
-TIMESTEPS = 10000
+models_dir = "C:/Users/cihan/OneDrive/Dokumente/models"
+os.makedirs(models_dir, exist_ok=True)
 
-for i in range(100):
-	model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False, tb_log_name=f"PPO")
-	model.save(f"{models_dir}/{TIMESTEPS*i}")
+TIMESTEPS = 20000
+model = PPO('MlpPolicy', env, verbose=1, tensorboard_log=log_dir, n_steps=4096, ent_coef=0.001)
+
+iters = 0
+j = 1
+while TIMESTEPS*iters < 10000000:
+    model.learn(total_timesteps=TIMESTEPS, reset_num_timesteps=False)
+    model.save(f"{models_dir}/{TIMESTEPS*iters}")
+    iters += 1
